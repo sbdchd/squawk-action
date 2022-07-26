@@ -56,3 +56,14 @@ jobs:
 ## example report
 
 [![Example Squawk PR Comment](./squawk-pr-comment.png)](https://github.com/sbdchd/squawk/pull/14#issuecomment-647009446)
+
+## development
+
+### releasing a new version
+
+1. [Release a new version](https://github.com/sbdchd/squawk-action/releases) (e.g. v5.2.1)
+2. Update major version tag to point to commit.
+   ```bash
+   git tag v5
+   git push --tags
+   ```
