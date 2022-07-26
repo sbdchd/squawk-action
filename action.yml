@@ -1,0 +1,33 @@
+name: 'Squawk action'
+description: 'Lint Postgres migrations with Squawk'
+author: sbdchd
+branding:
+  icon: 'check-square'
+  color: 'blue'
+
+inputs:
+  access_token:
+    description: 'Your GitHub Access Token (default: {{ github.token }})'
+    default: '${{ github.token }}'
+    required: true
+  version:
+    description: "Squawk NPM version to install (default: latest)"
+    default: 'latest'
+    required: true
+  pattern:
+    description: "Glob pattern of files to match. (./migrations/*)"
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v3
+    - run: npm install -g squawk-cli@${{inputs.version}}
+      shell: bash
+    - run: |
+        export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
+        export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
+        export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
+        export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        squawk --verbose upload-to-github ${{inputs.pattern}}
+      shell: bash
