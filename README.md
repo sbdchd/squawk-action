@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Find modified migrations
         run: |
-          modified_migrations=$(git diff --name-only origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF 'migrations/*.sql')
+          modified_migrations=$(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF 'migrations/*.sql')
           echo "$modified_migrations"
           echo "::set-output name=file_names::$modified_migrations"
         id: modified-migrations
