@@ -1,0 +1,18 @@
+name: test
+
+on: pull_request
+
+jobs:
+  test-multiple:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: migration handles migrations with one failure
+      uses: ./
+      with:
+        pattern: "test/one-failure/*.sql"
+        version: "latest"
+        upload-to-github: true
