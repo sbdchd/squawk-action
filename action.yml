@@ -29,5 +29,5 @@ runs:
         export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        squawk --verbose upload-to-github $(compgen -G "${{inputs.pattern}}")
+        squawk --verbose upload-to-github $(find . -type f -path ${{inputs.pattern}})
       shell: bash
