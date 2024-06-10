@@ -62,6 +62,8 @@ runs:
         ASSUME_IN_TRANSACTION="${{ inputs.assume-in-transaction }}"
         EXCLUDE="${{ inputs.exclude }}"
         FAIL_ON_VIOLATIONS="${{ inputs.fail-on-violations }}"
+        FILES="${{ inputs.files }}"
+        PATTERN="${{ inputs.pattern }}"
         PG_VERSION="${{ inputs.pg-version }}"
         VERBOSE="${{ inputs.verbose }}"
         
@@ -88,21 +90,19 @@ runs:
           COMMAND="$COMMAND --fail-on-violations"
         fi
 
+        if [ -n "$FILES" ]; then
+          COMMAND="$COMMAND $FILES"
+        fi
+        
+        if [ -n "$PATTERN" ]; then
+          expandedFiles=$(find . -type f -path ${{inputs.pattern}} | xargs echo)
+          COMMAND="$COMMAND $expandedFiles"
+        fi
+        
+        export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
+        export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
+        export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
+        export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        
         echo "Running: $COMMAND"
         sh -c "$COMMAND"
-    - if: inputs.pattern != ''
-      run: |
-        export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
-        export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
-        export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
-        export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        squawk --verbose upload-to-github $(find . -type f -path ${{inputs.pattern}})
-      shell: bash
-    - if: inputs.files != ''
-      run: |
-        export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
-        export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
-        export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
-        export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        squawk --verbose upload-to-github ${{inputs.files}}
-      shell: bash
