@@ -95,11 +95,7 @@ runs:
         fi
         
         if [ -n "$PATTERN" ]; then
-          # Normalize the path to start with ./
-          if [[ "$PATTERN" != ./* ]]; then
-            PATTERN ="./$PATTERN"
-          fi
-          expandedFiles=$(find . -type f -path $PATTERN | xargs echo)
+          expandedFiles=$(find . \( -path "./$PATTERN" -or -path "$PATTERN" \) -type f | xargs echo)
           COMMAND="$COMMAND $expandedFiles"
         fi
         
