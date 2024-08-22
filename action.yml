@@ -12,7 +12,7 @@ inputs:
     required: true
     type: string
   assume-in-transaction:
-    description: 'Fail on violations'
+    description: 'Assume in transaction'
     required: false
     default: 'false'
     type: boolean
