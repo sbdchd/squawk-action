@@ -53,6 +53,9 @@ jobs:
           pattern: ${{ steps.modified-migrations.outputs.file_names }}
 ```
 
+> [!TIP]
+> See `action.yml` for more action inputs.
+
 ## example report
 
 [![Example Squawk PR Comment](./squawk-pr-comment.png)](https://github.com/sbdchd/squawk/pull/14#issuecomment-647009446)
