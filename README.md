@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: sbdchd/squawk-action@v1
+      - uses: sbdchd/squawk-action@v2
         with:
           pattern: "migrations/*.sql"
           version: "latest"
@@ -48,7 +48,7 @@ jobs:
           echo "$modified_migrations"
           echo "::set-output name=file_names::$modified_migrations"
         id: modified-migrations
-      - uses: sbdchd/squawk-action@v1
+      - uses: sbdchd/squawk-action@v2
         with:
           pattern: ${{ steps.modified-migrations.outputs.file_names }}
 ```
