@@ -20,7 +20,7 @@ jobs:
   lint_migrations:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: sbdchd/squawk-action@v2
         with:
           pattern: "migrations/*.sql"
