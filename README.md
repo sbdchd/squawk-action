@@ -48,11 +48,11 @@ jobs:
         run: |
           modified_migrations=$(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF 'migrations/*.sql')
           echo "$modified_migrations"
-          echo "::set-output name=file_names::$modified_migrations"
+          echo "file_names=$modified_migrations" >> $GITHUB_OUTPUT
         id: modified-migrations
       - uses: sbdchd/squawk-action@v2
         with:
-          pattern: ${{ steps.modified-migrations.outputs.file_names }}
+          files: ${{ steps.modified-migrations.outputs.file_names }}
 ```
 
 > [!TIP]
