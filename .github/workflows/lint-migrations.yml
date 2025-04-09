@@ -1,7 +1,12 @@
 # .github/workflows/lint-migrations.yml
 name: Lint Migrations
 
-on: pull_request
+on:
+  # Run on pull_request and push to verify action works in both cases.
+  #
+  # When we run on push, we won't have a pull request to leave a comment on.
+  pull_request:
+  push:
 
 jobs:
   lint_migrations:

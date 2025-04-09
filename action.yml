@@ -85,6 +85,7 @@ runs:
           COMMAND="$COMMAND --verbose"
         fi
 
+        # We can only leave a comment when we run on pull_request.
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           COMMAND="$COMMAND upload-to-github"
           if "$FAIL_ON_VIOLATIONS"; then
