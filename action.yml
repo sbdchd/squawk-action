@@ -12,37 +12,37 @@ inputs:
     required: true
     type: string
   assume-in-transaction:
-    description: 'Assume in transaction'
+    description: "Assume in transaction"
     required: false
-    default: 'false'
+    default: "false"
     type: boolean
   exclude:
-    description: 'Rules to exclude, as a comma-separated string'
+    description: "Rules to exclude, as a comma-separated string"
     required: false
     type: string
   files:
     description: "Space separated list of file paths to check. Cannot contain glob patterns."
     required: false
-    default: ''
+    default: ""
     type: string
   fail-on-violations:
-    description: 'Fail on violations'
+    description: "Fail on violations"
     required: false
-    default: 'false'
+    default: "false"
     type: boolean
   pattern:
     description: "Glob pattern of files to match. (./migrations/*)"
     required: false
-    default: ''
+    default: ""
     type: string
   pg-version:
-    description: 'PostgreSQL version'
+    description: "PostgreSQL version"
     required: false
     type: string
   verbose:
-    description: 'Verbose output'
+    description: "Verbose output"
     required: false
-    default: 'true'
+    default: "true"
     type: boolean
   version:
     description: "Squawk NPM version to install (default: latest)"
@@ -66,13 +66,13 @@ runs:
         PATTERN="${{ inputs.pattern }}"
         PG_VERSION="${{ inputs.pg-version }}"
         VERBOSE="${{ inputs.verbose }}"
-        
+
         COMMAND="squawk"
-        
+
         if "$ASSUME_IN_TRANSACTION"; then
           COMMAND="$COMMAND --assume-in-transaction"
         fi
-        
+
         if [ -n "$EXCLUDE" ]; then
           COMMAND="$COMMAND --exclude=$EXCLUDE"
         fi
@@ -80,29 +80,32 @@ runs:
         if [ -n "$PG_VERSION" ]; then
           COMMAND="$COMMAND --pg-version=$PG_VERSION"
         fi
-        
+
         if "$VERBOSE"; then
           COMMAND="$COMMAND --verbose"
         fi
-        
-        COMMAND="$COMMAND upload-to-github"
-        if "$FAIL_ON_VIOLATIONS"; then
-          COMMAND="$COMMAND --fail-on-violations"
+
+        # We can only leave a comment when we run on pull_request.
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          COMMAND="$COMMAND upload-to-github"
+          if "$FAIL_ON_VIOLATIONS"; then
+            COMMAND="$COMMAND --fail-on-violations"
+          fi
         fi
 
         if [ -n "$FILES" ]; then
           COMMAND="$COMMAND $FILES"
         fi
-        
+
         if [ -n "$PATTERN" ]; then
           expandedFiles=$(find . \( -path "./$PATTERN" -or -path "$PATTERN" \) -type f | xargs echo)
           COMMAND="$COMMAND $expandedFiles"
         fi
-        
+
         export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
         export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        
+
         echo "Running: $COMMAND"
         sh -c "$COMMAND"
