@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 3.0.0 - 2025-04-09
+
+### Fixed
+
+- Fixed support for non-`pull_request` trigger events, like `push` or `merge_queue` (#23).
+
 ## 2.0.0 - 2024-09-21
 
 ### Added
 
 - Added more configuration options (#10, #15). Thanks @Agraphie!
-
 
 ## 1.0.2 - 2023-12-05
 
