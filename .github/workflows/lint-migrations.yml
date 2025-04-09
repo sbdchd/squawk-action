@@ -1,0 +1,13 @@
+# .github/workflows/lint-migrations.yml
+name: Lint Migrations
+
+on: pull_request
+
+jobs:
+  lint_migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ./
+        with:
+          pattern: "*.sql"
