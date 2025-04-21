@@ -16,6 +16,11 @@ inputs:
     required: false
     default: "false"
     type: boolean
+  config:
+    description: "Path to a custom config file"
+    required: false
+    default: ""
+    type: string
   exclude:
     description: "Rules to exclude, as a comma-separated string"
     required: false
@@ -60,6 +65,7 @@ runs:
     - shell: bash
       run: |
         ASSUME_IN_TRANSACTION="${{ inputs.assume-in-transaction }}"
+        CONFIG="${{ inputs.config }}"
         EXCLUDE="${{ inputs.exclude }}"
         FAIL_ON_VIOLATIONS="${{ inputs.fail-on-violations }}"
         FILES="${{ inputs.files }}"
@@ -71,6 +77,10 @@ runs:
 
         if "$ASSUME_IN_TRANSACTION"; then
           COMMAND="$COMMAND --assume-in-transaction"
+        fi
+
+        if [ -n "$CONFIG" ]; then
+          COMMAND="$COMMAND --config=$CONFIG"
         fi
 
         if [ -n "$EXCLUDE" ]; then
