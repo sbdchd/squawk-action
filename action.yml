@@ -30,6 +30,11 @@ inputs:
     required: false
     default: ""
     type: string
+  upload-to-github:
+    description: "Comment on a PR with Squawk's results"
+    required: false
+    default: "true"
+    type: boolean
   fail-on-violations:
     description: "Fail on violations"
     required: false
@@ -67,6 +72,7 @@ runs:
         ASSUME_IN_TRANSACTION="${{ inputs.assume-in-transaction }}"
         CONFIG="${{ inputs.config }}"
         EXCLUDE="${{ inputs.exclude }}"
+        UPLOAD_TO_GITHUB="${{ inputs.upload-to-github }}"
         FAIL_ON_VIOLATIONS="${{ inputs.fail-on-violations }}"
         FILES="${{ inputs.files }}"
         PATTERN="${{ inputs.pattern }}"
@@ -97,7 +103,10 @@ runs:
 
         # We can only leave a comment when we run on pull_request.
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          COMMAND="$COMMAND upload-to-github"
+          if "$UPLOAD_TO_GITHUB"; then
+            COMMAND="$COMMAND upload-to-github"
+          fi
+
           if "$FAIL_ON_VIOLATIONS"; then
             COMMAND="$COMMAND --fail-on-violations"
           fi
