@@ -121,6 +121,7 @@ runs:
           COMMAND="$COMMAND $expandedFiles"
         fi
 
+        export SQUAWK_GITHUB_API_URL=$GITHUB_API_URL
         export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
         export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
