@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
       - name: Find modified migrations
         run: |
-          modified_migrations=$(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF 'migrations/*.sql')
+          modified_migrations=$(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF...origin/$GITHUB_HEAD_REF 'migrations/*.sql' | tr '\n' ' ')
           echo "$modified_migrations"
           echo "file_names=$modified_migrations" >> $GITHUB_OUTPUT
         id: modified-migrations
