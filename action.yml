@@ -62,22 +62,35 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
       with:
         node-version: 20
-    - run: npm install -g squawk-cli@${{inputs.version}}
+    - run: npm install -g "squawk-cli@$VERSION"
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
     - shell: bash
+      env:
+        INPUT_ASSUME_IN_TRANSACTION: ${{ inputs.assume-in-transaction }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_UPLOAD_TO_GITHUB: ${{ inputs.upload-to-github }}
+        INPUT_FAIL_ON_VIOLATIONS: ${{ inputs.fail-on-violations }}
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_PATTERN: ${{ inputs.pattern }}
+        INPUT_PG_VERSION: ${{ inputs.pg-version }}
+        INPUT_VERBOSE: ${{ inputs.verbose }}
+        INPUT_ACCESS_TOKEN: ${{ inputs.access_token }}
       run: |
-        ASSUME_IN_TRANSACTION="${{ inputs.assume-in-transaction }}"
-        CONFIG="${{ inputs.config }}"
-        EXCLUDE="${{ inputs.exclude }}"
-        UPLOAD_TO_GITHUB="${{ inputs.upload-to-github }}"
-        FAIL_ON_VIOLATIONS="${{ inputs.fail-on-violations }}"
-        FILES="${{ inputs.files }}"
-        PATTERN="${{ inputs.pattern }}"
-        PG_VERSION="${{ inputs.pg-version }}"
-        VERBOSE="${{ inputs.verbose }}"
+        ASSUME_IN_TRANSACTION="$INPUT_ASSUME_IN_TRANSACTION"
+        CONFIG="$INPUT_CONFIG"
+        EXCLUDE="$INPUT_EXCLUDE"
+        UPLOAD_TO_GITHUB="$INPUT_UPLOAD_TO_GITHUB"
+        FAIL_ON_VIOLATIONS="$INPUT_FAIL_ON_VIOLATIONS"
+        FILES="$INPUT_FILES"
+        PATTERN="$INPUT_PATTERN"
+        PG_VERSION="$INPUT_PG_VERSION"
+        VERBOSE="$INPUT_VERBOSE"
 
         COMMAND="squawk"
 
@@ -102,7 +115,7 @@ runs:
         fi
 
         # We can only leave a comment when we run on pull_request.
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+        if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
           if "$UPLOAD_TO_GITHUB"; then
             COMMAND="$COMMAND upload-to-github"
           fi
@@ -122,7 +135,7 @@ runs:
         fi
 
         export SQUAWK_GITHUB_API_URL=$GITHUB_API_URL
-        export SQUAWK_GITHUB_TOKEN=${{inputs.access_token}}
+        export SQUAWK_GITHUB_TOKEN="$INPUT_ACCESS_TOKEN"
         export SQUAWK_GITHUB_REPO_OWNER=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
         export SQUAWK_GITHUB_PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
