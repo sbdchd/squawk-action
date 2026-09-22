@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2.2.0 - 2026-09-22
+
+### Changed
+
+- Bumped `actions/setup-node` to v7 and the Node version used to run Squawk to 24.
+- Boolean inputs are now compared against `true` rather than evaluated as shell commands, so a value other than `true` or `false` is treated as false instead of erroring.
+
+## 2.1.0 - 2026-06-08
+
+### Added
+
+- Added a `config` input for passing a custom config file (#27).
+- Added an `upload-to-github` input for controlling whether results are posted as a PR comment (#28).
+- Added support for `GITHUB_API_URL`, so the action works against GitHub Enterprise Server (#30).
+
+### Changed
+
+- Hardened the action: inputs are passed to the shell via the environment rather than interpolated into the script, and the actions it calls are pinned to commit hashes (#37).
+
 ## 2.0.1 - 2025-04-09
 
 ### Fixed
