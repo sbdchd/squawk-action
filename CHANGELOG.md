@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2.1.0 - 2026-09-22
+
+### Changed
+
+- Bumped `actions/setup-node` to v7 and the Node version used to run Squawk to 24.
+- Boolean inputs are now compared against `true` rather than evaluated as shell commands, so a value other than `true` or `false` is treated as false instead of erroring.
+
 ## 2.0.1 - 2025-04-09
 
 ### Fixed
