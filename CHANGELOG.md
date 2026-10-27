@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a `reporter` input: `reviewdog` reports violations through reviewdog, e.g. as inline PR review comments, instead of a single PR comment. Tuned with the new `reviewdog-reporter`, `reviewdog-filter-mode` and `reviewdog-version` inputs.
+
 ## 2.2.0 - 2026-09-22
 
 ### Changed
