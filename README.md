@@ -58,6 +58,35 @@ jobs:
 > [!TIP]
 > See `action.yml` for more action inputs.
 
+## reviewdog
+
+Set `reporter: reviewdog` to report violations through [reviewdog](https://github.com/reviewdog/reviewdog) instead of a single PR comment. With the default `github-pr-review` reporter, each violation becomes an inline review comment on the offending line.
+
+```yml
+# .github/workflows/lint-migrations.yml
+name: Lint Migrations
+
+on: pull_request
+
+jobs:
+  lint_migrations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # github-pr-review
+      checks: write # github-pr-check, github-check
+    steps:
+      - uses: actions/checkout@v6
+      - uses: sbdchd/squawk-action@v2
+        with:
+          pattern: "migrations/*.sql"
+          reporter: reviewdog
+          reviewdog-reporter: github-pr-review
+          reviewdog-filter-mode: added
+```
+
+`reviewdog-reporter` and `reviewdog-filter-mode` take reviewdog's [reporters](https://github.com/reviewdog/reviewdog#reporters) and [filter modes](https://github.com/reviewdog/reviewdog#filter-mode). `upload-to-github` is ignored, and `fail-on-violations: true` fails the step when reviewdog reports any violation (`-fail-level=any`).
+
 ## example report
 
 [![Example Squawk PR Comment](./squawk-pr-comment.png)](https://github.com/sbdchd/squawk/pull/14#issuecomment-647009446)

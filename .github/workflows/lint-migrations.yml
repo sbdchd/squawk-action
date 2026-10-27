@@ -23,3 +23,21 @@ jobs:
       - uses: ./
         with:
           pattern: "*.sql"
+
+  lint_migrations_reviewdog:
+    permissions:
+      contents: read
+      checks: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          pattern: "*.sql"
+          reporter: reviewdog
+          # github-check works on push as well as pull_request, and nofilter
+          # reports example.sql even when a PR doesn't touch it.
+          reviewdog-reporter: github-check
+          reviewdog-filter-mode: nofilter

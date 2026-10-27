@@ -27,9 +27,25 @@ inputs:
     required: false
     default: ""
   upload-to-github:
-    description: "Comment on a PR with Squawk's results"
+    description: "Comment on a PR with Squawk's results. Ignored when `reporter` is `reviewdog`."
     required: false
     default: "true"
+  reporter:
+    description: "How to report results: `comment` (single PR comment) or `reviewdog` (inline review comments or checks via reviewdog)"
+    required: false
+    default: "comment"
+  reviewdog-reporter:
+    description: "reviewdog reporter: github-pr-review, github-pr-check, github-check or github-pr-annotations"
+    required: false
+    default: "github-pr-review"
+  reviewdog-filter-mode:
+    description: "reviewdog filter mode: added, diff_context, file or nofilter"
+    required: false
+    default: "added"
+  reviewdog-version:
+    description: "reviewdog version to install (default: latest)"
+    required: false
+    default: "latest"
   fail-on-violations:
     description: "Fail on violations"
     required: false
@@ -60,12 +76,19 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
+    - if: inputs.reporter == 'reviewdog'
+      uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+      with:
+        reviewdog_version: ${{ inputs.reviewdog-version }}
     - shell: bash
       env:
         INPUT_ASSUME_IN_TRANSACTION: ${{ inputs.assume-in-transaction }}
         INPUT_CONFIG: ${{ inputs.config }}
         INPUT_EXCLUDE: ${{ inputs.exclude }}
         INPUT_UPLOAD_TO_GITHUB: ${{ inputs.upload-to-github }}
+        INPUT_REPORTER: ${{ inputs.reporter }}
+        INPUT_REVIEWDOG_REPORTER: ${{ inputs.reviewdog-reporter }}
+        INPUT_REVIEWDOG_FILTER_MODE: ${{ inputs.reviewdog-filter-mode }}
         INPUT_FAIL_ON_VIOLATIONS: ${{ inputs.fail-on-violations }}
         INPUT_FILES: ${{ inputs.files }}
         INPUT_PATTERN: ${{ inputs.pattern }}
@@ -74,6 +97,11 @@ runs:
         INPUT_ACCESS_TOKEN: ${{ inputs.access_token }}
       run: |
         set -euo pipefail
+
+        if [ "$INPUT_REPORTER" != "comment" ] && [ "$INPUT_REPORTER" != "reviewdog" ]; then
+          echo "::error::Unknown reporter '$INPUT_REPORTER', expected 'comment' or 'reviewdog'"
+          exit 1
+        fi
 
         COMMAND=(squawk)
 
@@ -97,8 +125,12 @@ runs:
           COMMAND+=(--verbose)
         fi
 
+        if [ "$INPUT_REPORTER" = "reviewdog" ]; then
+          COMMAND+=(--reporter=json)
+        fi
+
         # We can only leave a comment when we run on pull_request.
-        if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+        if [[ "$GITHUB_EVENT_NAME" == "pull_request" && "$INPUT_REPORTER" != "reviewdog" ]]; then
           if [ "$INPUT_UPLOAD_TO_GITHUB" = "true" ]; then
             COMMAND+=(upload-to-github)
           fi
@@ -130,4 +162,45 @@ runs:
         export SQUAWK_GITHUB_PR_NUMBER
 
         echo "Running: ${COMMAND[*]}"
-        "${COMMAND[@]}"
+
+        if [ "$INPUT_REPORTER" = "comment" ]; then
+          "${COMMAND[@]}"
+          exit 0
+        fi
+
+        # Squawk 2.20.0-2.56.x print GitHub annotations into JSON output (sbdchd/squawk#1186).
+        export SQUAWK_DISABLE_GITHUB_ANNOTATIONS=1
+
+        # Squawk exits 1 when it finds violations and 2+ on usage errors.
+        SQUAWK_OUTPUT="$(mktemp "$RUNNER_TEMP/squawk.XXXXXX")"
+        SQUAWK_EXIT=0
+        "${COMMAND[@]}" > "$SQUAWK_OUTPUT" || SQUAWK_EXIT=$?
+        if [ "$SQUAWK_EXIT" -gt 1 ]; then
+          exit "$SQUAWK_EXIT"
+        fi
+
+        REVIEWDOG_FAIL_LEVEL=none
+        if [ "$INPUT_FAIL_ON_VIOLATIONS" = "true" ]; then
+          REVIEWDOG_FAIL_LEVEL=any
+        fi
+
+        # Squawk's JSON uses 0-based lines and columns; rdjsonl is 1-based.
+        jq -c '.[] | {
+          message: (.message + (if .help then "\n\n" + .help else "" end)),
+          location: {
+            path: (.file | ltrimstr("./")),
+            range: {
+              start: {line: (.line + 1), column: (.column + 1)},
+              end: {line: (.line_end + 1), column: (.column_end + 1)}
+            }
+          },
+          severity: (.level | ascii_upcase),
+          source: {name: "squawk", url: "https://squawkhq.com"},
+          code: {value: .rule_name, url: ("https://squawkhq.com/docs/" + .rule_name)}
+        }' "$SQUAWK_OUTPUT" \
+          | REVIEWDOG_GITHUB_API_TOKEN="$INPUT_ACCESS_TOKEN" reviewdog \
+              -f=rdjsonl \
+              -name=squawk \
+              -reporter="$INPUT_REVIEWDOG_REPORTER" \
+              -filter-mode="$INPUT_REVIEWDOG_FILTER_MODE" \
+              -fail-level="$REVIEWDOG_FAIL_LEVEL"
